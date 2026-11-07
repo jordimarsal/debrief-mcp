@@ -15,3 +15,6 @@ wheels/
 .ruff_cache/
 
 .env
+
+# harness installer backups (pre-update copies) — machine scratch
+harness/backup/

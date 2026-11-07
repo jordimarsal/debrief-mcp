@@ -11,14 +11,14 @@
     ],
     "audit_level": "standard",
     "workflow": "hybrid",
-    "harness_version": "v0.10.3-1-g271c75b",
+    "harness_version": "v0.10.8",
     "architecture": "hexagonal"
   },
   "features": [
     {
       "id": 1,
       "name": "debrief",
-      "title": "debrief — answer agent questions from receipts (bench · run · propose)",
+      "title": "debrief \u2014 answer agent questions from receipts (bench \u00b7 run \u00b7 propose)",
       "description": "MCP server over two evidence ports: bench (what ggufbench measured, from its artifacts) and run (where a buildwright run broke, from its log), plus routing.propose, which composes both ports' findings into a BW_ROLE_* diff returned as text. debrief never writes (ADR-0001); proposals target roles, never the models.yaml registry (ADR-0003); incomparable rows are refused, not averaged (ADR-0004); the two ports answer independently and share one Finding type (ADR-0002). User-facing and demoable end-to-end per increment, so it is cut into vertical slices (docs/slicing-protocol.md): S1 bench_query, S2 run_inspect, S3 role_propose. The slice map in docs/architecture.md is approved at this parent's Spec Gate, and each slice becomes a feature with part_of: debrief.",
       "acceptance": [
         "The parent is done only when its last slice (S3 role_propose) passes its Completion Gate with a recorded demo",
@@ -32,7 +32,7 @@
     {
       "id": 2,
       "name": "debrief_bench_query",
-      "title": "debrief S1 bench_query — agent asks what ggufbench measured -> findings from real artifacts",
+      "title": "debrief S1 bench_query \u2014 agent asks what ggufbench measured -> findings from real artifacts",
       "description": "Walking skeleton (S1): bench.query reads real ggufbench artifacts through the BenchStore port and answers findings; gated inside the parent debrief.",
       "acceptance": [
         "Bench findings come only from ggufbench artifacts (R3).",
@@ -45,7 +45,7 @@
     {
       "id": 3,
       "name": "debrief_run_inspect",
-      "title": "debrief S2 run_inspect — agent asks where a run broke -> structured findings",
+      "title": "debrief S2 run_inspect \u2014 agent asks where a run broke -> structured findings",
       "description": "S2: run.inspect reads one buildwright run log through the RunLog port and answers findings; gated inside the parent debrief.",
       "acceptance": [
         "Run findings come only from a buildwright run log (R4).",
@@ -58,7 +58,7 @@
     {
       "id": 4,
       "name": "debrief_role_propose",
-      "title": "debrief S3 role_propose — agent gets a BW_ROLE_* proposal citing both ports, text only",
+      "title": "debrief S3 role_propose \u2014 agent gets a BW_ROLE_* proposal citing both ports, text only",
       "description": "S3: routing.propose composes QueryBench + InspectRun and renders a BW_ROLE_* diff as text; refuses incomparable rows; gated inside the parent debrief.",
       "acceptance": [
         "The proposal is a BW_ROLE_* diff as text from both ports' findings (R5).",

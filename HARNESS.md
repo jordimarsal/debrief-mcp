@@ -1,6 +1,6 @@
-# Harness — debrief
+# Harness — debrief-mcp
 
-Installed with [harness](https://github.com/jordimarsal/harness) (`opencode`, `v0.10.3-1-g271c75b`).
+Installed with [harness](https://github.com/jordimarsal/harness) (`opencode`, `v0.10.8`).
 
 - **Stack detected:** python
 - **Architecture:** hexagonal
