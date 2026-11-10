@@ -18,3 +18,6 @@ wheels/
 
 # harness installer backups (pre-update copies) — machine scratch
 harness/backup/
+
+# sonar-scanner artifacts
+.scannerwork/
