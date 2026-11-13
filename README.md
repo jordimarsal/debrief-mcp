@@ -69,6 +69,21 @@ uv run pytest tests
 
 Requires Python ≥ 3.14 ([uv](https://docs.astral.sh/uv/)).
 
+## Another machine
+
+The evidence tree (`artifacts/`) ships with this clone — `bench.query`,
+`run.inspect` and `routing.propose` work from receipts without re-running
+anything. To make a machine a *publisher* (its buildwright runs and ggufbench
+runs land here), wire it once:
+
+```bash
+scripts/setup-machine.sh [path-to-this-checkout]
+```
+
+It appends `DEBRIEF_HOME` + the two writer env vars to your shell rc and prints
+the MCP registration block for `opencode.json`. Unset vars degrade gracefully:
+writers stay in-repo (self-contained mode), nothing breaks.
+
 ## Repository map
 
 See [`AGENTS.md`](AGENTS.md) — it is the navigation map for agents (and humans).
