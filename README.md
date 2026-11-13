@@ -8,9 +8,10 @@ The evidence MCP: answers agent questions from receipts — what
 last [buildwright](https://github.com/jordimarsal/buildwright) run broke — and
 proposes role changes **as text**. It never writes.
 
-> Status: scaffolding. The harness is installed and the parent feature is
-> `pending` — the spec (`harness/specs/debrief/`) is not written yet, so the
-> tool list below is the plan, not the product.
+> Status: **implemented and gated.** The spec (`harness/specs/debrief/`) was
+> approved at the Completion Gate (2026-11-03; 11/11 requirements traced) and
+> the three slices — S1 `bench.query`, S2 `run.inspect`, S3 `routing.propose` —
+> are `done`. The tool table below is the shipped surface.
 
 ## The idea
 
@@ -20,11 +21,11 @@ proposes role changes **as text**. It never writes.
 - `debrief` is the reader. One query surface, one shared finding type, and a
   proposal that cites both. Two ports that answer different questions:
 
-| Port | Question | Reads | Tools (planned) |
+| Port | Question | Reads | Tools |
 | --- | --- | --- | --- |
-| `bench` | What did we measure? | ggufbench artifacts | `bench.which_model` · `bench.compare` · `bench.why_excluded` |
-| `run` | Where did this run break? | a buildwright run log | `run.inspect_run` · `run.failures` · `run.tool_calls` |
-| `routing.propose` | What would you change? | findings from both | prints a `BW_ROLE_*` diff as text |
+| `bench` | What did we measure? | ggufbench artifacts | `bench.query` |
+| `run` | Where did this run break? | a buildwright run log | `run.inspect` |
+| `routing` | What would you change? | findings from both | `routing.propose` — returns a `BW_ROLE_*` diff as text |
 
 ## Product rules (the gates that matter in code)
 
