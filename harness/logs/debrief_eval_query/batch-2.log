@@ -1,0 +1,74 @@
+# Batch 2 (T7–T9) — debrief_eval_query — full gate battery
+
+Run: 2026-11-16T11Z
+State: T1–T9 ticked; pyproject excludes tests/fixtures from ruff/mypy (fixture
+.py files are battery data the adapter reads, not source the linters judge).
+
+$ uv run python harness/tools/validate-feature-list.py harness/feature_list.json
+feature_list.json is valid (protocol v1)
+(exit 0)
+
+$ uv run pytest tests
+
+tests/test_bench.py .................................................... [ 26%]
+.                                                                        [ 27%]
+tests/test_cli_help.py .....                                             [ 29%]
+tests/test_eval.py .........................................             [ 50%]
+tests/test_package.py .                                                  [ 51%]
+tests/test_propose.py .................................................. [ 76%]
+...............                                                          [ 84%]
+tests/test_quality_gates.py .                                            [ 84%]
+tests/test_run.py ..............................                         [100%]
+
+============================= 196 passed in 1.00s ==============================
+
+$ uv run ruff check .
+All checks passed!
+(exit 0)
+
+$ uv run ruff format --check .
+18 files already formatted
+(exit 0)
+
+$ uv run mypy --strict
+Success: no issues found in 18 source files
+(exit 0)
+
+$ bash harness/tools/audit-security.sh
+# Security Audit Report (stack: python)
+
+## SAST: bandit — SKIPPED (not installed; uvx bandit, or pip install bandit)
+## Dependency scan: pip-audit — SKIPPED (not installed; uvx pip-audit, or pip install pip-audit)
+
+## Checklist
+Confirm every item of the Security Audit Checklist in docs/verification.md
+(section 'Security Audit Checklist'). Record the outcome in the review file.
+
+VERDICT: no HIGH severity findings reported by automated tools.
+(exit 0)
+
+$ bash harness/init.sh
+
+============================= 196 passed in 0.96s ==============================
+[0;32m[OK][0m    All tests pass
+
+── 4. Summary ────────────────────────────────────────
+[0;32m[OK][0m    Environment ready. You can start working.
+(exit 0)
+
+$ bash harness/tools/gauntlet.sh --feature debrief_eval_query
+# Gauntlet G1 — feature debrief_eval_query: PASS
+
+- spec-requirements:ok
+- spec-design:ok
+- spec-tasks:ok
+- tasks:ok
+- traceability:ok
+
+Traceability detail: ok
+(exit 0)
+
+$ python3 harness/tools/check-traceability.py --feature debrief_eval_query
+## debrief_eval_query: 5/5 requirements covered
+VERDICT: PASS
+(exit 0)

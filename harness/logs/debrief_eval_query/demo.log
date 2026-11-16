@@ -1,0 +1,41 @@
+# Demo — debrief_eval_query (eval.query against the real fleet-eval checkout)
+
+Run: 2026-11-16T11Z
+
+```
+DEBRIEF_EVAL_ROOT=/Users/jmarsalp-local/works/fleet-eval uv run python - <<'PY'
+import os
+from pathlib import Path
+from debrief.mcp_server import eval_query
+from debrief.domain import shared_signature
+
+r = eval_query()
+assert r.error is None, r.error
+print(f"eval.query -> {len(r.findings)} findings (error: {r.error})")
+sig = shared_signature(r.findings)
+print("shared signature:", sig.key)
+models = sorted({f.model for f in r.findings})
+print("models:", ", ".join(models))
+for f in r.findings:
+    if "delivery failure" in f.reason:
+        print("delivery failure:", f.model, f.task, "->", f.outcome, f.measure)
+print("sample row:", next(f for f in r.findings if f.model == "gemma4" and f.task == "E_largefile"))
+print()
+r2 = eval_query("../debrief-mcp/pyproject.toml")
+print("traversal probe ->", r2.error.code, "|", r2.error.detail)
+r3 = eval_query("answers")
+print("wrong-root probe ->", r3.error.code, "|", r3.error.message)
+PY
+
+```
+read 48 fleet-eval finding(s) from 10 model(s)
+eval query answered from receipts: 48 findings
+eval query refused: eval_source_missing
+eval.query -> 48 findings (error: None)
+shared signature: A:10,B:10,C:7,D:7,E:5@8629fb951172@llama.cpp+strata
+models: Huihui, SC117, Strata, gemma4, minicpm, qwen36, qwen38, qwen38-think, qwen38-think16, qwen4b
+delivery failure: qwen38 B_fix -> fail 0.0
+sample row: Finding(model='gemma4', task='E_largefile', outcome='pass', reason='line ratio 1.03; 0 symbol(s) missing; 0 probe(s) failing', evidence='answers/gemma4/E_largefile.md', signature=TaskSignature(graded_counts=(('A', 10), ('B', 10), ('C', 7), ('D', 7), ('E', 5)), baseline='8629fb951172', engine_build='llama.cpp+strata'), measure=1.032, role=None)
+
+traversal probe -> path_outside_root | '../debrief-mcp/pyproject.toml' resolves outside /Users/jmarsalp-local/works/fleet-eval
+wrong-root probe -> eval_source_missing | no fleet-eval results at the requested path

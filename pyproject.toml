@@ -31,7 +31,9 @@ line-length = 100
 target-version = "py314"
 # harness/tools are harness-owned scripts executed by the system python3 (<3.14),
 # so py314-only syntax ruff formats towards must never be applied to them.
-extend-exclude = ["harness/tools"]
+# tests/fixtures carry evidence-shaped .py files (a fleet-eval battery); they are
+# data the adapter reads, not source the linters judge.
+extend-exclude = ["harness/tools", "tests/fixtures"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP", "B"]
@@ -39,6 +41,9 @@ select = ["E", "F", "W", "I", "UP", "B"]
 [tool.mypy]
 strict = true
 files = ["src", "tests"]
+# Fixture .py files are battery data (two files even share a module name); the
+# adapter reads them as bytes, mypy must not type-check them.
+exclude = ["^tests/fixtures/"]
 
 [tool.uv.build-backend]
 # Distribution is `debrief-mcp` (PyPI name), but the importable package stays

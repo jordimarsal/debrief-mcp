@@ -301,9 +301,7 @@ def _engine_family(root: Path) -> str:
     return "+".join(sorted(families)) if families else "unrecorded"
 
 
-def _map_model(
-    root: Path, model: _Model, signature: TaskSignature
-) -> list[Finding] | DebriefError:
+def _map_model(root: Path, model: _Model, signature: TaskSignature) -> list[Finding] | DebriefError:
     grade_path = model.model_dir / GRADE_FILE
     try:
         findings = [
@@ -340,9 +338,7 @@ def _evidence(root: Path, model: str, task: str) -> str:
     return relative
 
 
-def _map_task_a_b(
-    root: Path, model: _Model, task: str, signature: TaskSignature
-) -> Finding:
+def _map_task_a_b(root: Path, model: _Model, task: str, signature: TaskSignature) -> Finding:
     block = _task_block(model.graded, task)
     evidence = _evidence(root, model.name, task)
     if required_int(block, "blocks") == 0:
@@ -437,9 +433,7 @@ def _map_task_e(root: Path, model: _Model, signature: TaskSignature) -> list[Fin
     ]
 
 
-def _delivery_failure(
-    model: str, task: str, evidence: str, signature: TaskSignature
-) -> Finding:
+def _delivery_failure(model: str, task: str, evidence: str, signature: TaskSignature) -> Finding:
     return Finding(
         model=model,
         task=TASK_NAMES[task],

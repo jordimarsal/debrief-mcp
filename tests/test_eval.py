@@ -17,7 +17,7 @@ from debrief.adapters.fleet_eval_store import (
     GRADE_FILE,
     FleetEvalStore,
 )
-from debrief.domain import FAIL, PASS, TaskSignature, shared_signature
+from debrief.domain import FAIL, PASS, Finding, TaskSignature, shared_signature
 from debrief.errors import (
     EVAL_SOURCE_MISSING,
     INCOMPARABLE_ROWS,
@@ -41,7 +41,7 @@ def eval_env(monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
     yield
 
 
-def _query(root: Path) -> list | DebriefError:
+def _query(root: Path) -> list[Finding] | DebriefError:
     return QueryEval(FleetEvalStore(root)).run()
 
 
@@ -57,7 +57,7 @@ def _patch_json(path: Path, change: dict[str, object]) -> None:
     path.write_text(json.dumps(document), encoding="utf-8")
 
 
-def _rows(answer: list | DebriefError) -> list:
+def _rows(answer: list[Finding] | DebriefError) -> list[Finding]:
     assert isinstance(answer, list), answer
     return answer
 
@@ -203,9 +203,7 @@ def test_two_batteries_under_one_root_refuse_rather_than_average(tmp_path: Path)
         pytest.param("does-not-exist", EVAL_SOURCE_MISSING, id="missing_root"),
         pytest.param("logs", EVAL_SOURCE_MISSING, id="no_answers_directory"),
         pytest.param("answers", EVAL_SOURCE_MISSING, id="answers_without_graded_results"),
-        pytest.param(
-            "../fleet_eval_broken/broken-json", SOURCE_UNPARSEABLE, id="invalid_json"
-        ),
+        pytest.param("../fleet_eval_broken/broken-json", SOURCE_UNPARSEABLE, id="invalid_json"),
         pytest.param(
             "../fleet_eval_broken/not-an-object", SOURCE_UNPARSEABLE, id="not_a_json_object"
         ),

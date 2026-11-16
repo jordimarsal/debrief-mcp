@@ -15,10 +15,10 @@
 - ~~S4 spec trio + parent amendments; human Spec Gate~~ — approved (2026-11-16, "endavant").
 - ~~S4 batch 1: T1–T6 (port, adapter, signature, tool, fixtures + tests)~~ — done,
   gate green in `harness/logs/debrief_eval_query/batch-1.log` (196 passed).
-- **Now: S4 batch 2 (T7–T9)** — traceability table with real test names,
-  `review.md`, demo note, full battery (`init.sh`, pytest, ruff, mypy --strict,
-  audit-security, gauntlet) in `harness/logs/debrief_eval_query/batch-2.log`;
-  then Completion Gate request.
+- ~~S4 batch 2 (T7–T9): docs, traceability, demo, full battery~~ — done; gauntlet
+  G1 PASS, traceability 5/5, transcript in `batch-2.log`.
+- **Now: Completion Gate** — request the human's approval to flip the feature to
+  `done` (commit batch 2 first).
 - **Next after the gate:** session close (history entry + human reviewer walks
   C1–C8 in `harness/CHECKPOINTS.md`).
 
@@ -187,8 +187,24 @@
   first executable gate ran after T6; tasks.md records T1–T6 as one batch citing
   that single log.
 
+- 2026-11-16 — S4 batch 2 (T7–T9) done. Docs went with the spec commit (`a130043`);
+  traceability table filled in `requirements.md` + tool-readable table in
+  `harness/progress/impl_debrief_eval_query.md` (`feature:` attributed);
+  `check-traceability --feature debrief_eval_query` → 5/5 PASS, verdict saved to
+  `harness/specs/debrief_eval_query/review.md`. Demo against the real checkout
+  recorded (`demo.log`: 48 findings, shared signature
+  `A:10,B:10,C:7,D:7,E:5@8629fb951172@llama.cpp+strata`, qwen38/B delivery failure,
+  traversal → `path_outside_root`, battery-less subpath → `eval_source_missing`).
+  Gate notes: the fixture `.py` battery files made `ruff format --check` and
+  `mypy --strict` fail, so `pyproject.toml` now excludes `tests/fixtures` from both
+  (fixture files are data the adapter reads, not source the linters judge);
+  `tasks.md` task lines moved to the gauntlet's canonical `- [x] T<n>:` shape (the
+  bold `**T1**` form parsed as "no tasks"). Full battery green — 196 passed, ruff,
+  ruff format, mypy --strict (18 files), audit-security no HIGH, init.sh OK,
+  gauntlet G1 PASS (`gauntlet-g1.log`), traceability 5/5 — transcript in
+  `harness/logs/debrief_eval_query/batch-2.log`.
+
 ## Next step
 
-S4 batch 2 (T7–T9): traceability table + `review.md`, demo note, full battery
-into `harness/logs/debrief_eval_query/batch-2.log`; then request the Completion
-Gate. Session close afterwards (history entry + C1–C8).
+Completion Gate: request the human's approval to flip `debrief_eval_query` to
+`done`. Session close afterwards (history entry + C1–C8).
