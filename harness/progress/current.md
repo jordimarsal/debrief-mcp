@@ -3,208 +3,24 @@
 > This file is cleared on session close and moved to `history.md`.
 > Keep it updated in real time while you work — not at the end.
 
-- **Feature in progress:** `debrief_eval_query` (S4) — spec approved; batch 1 (T1–T6) green, batch 2 (T7–T9) next
-- **Started:** 2026-11-02
+- **Feature in progress:** none — all five features `done` (parent `debrief` + S1–S4)
+- **Started:** —
 - **Agent:** in-session (hybrid)
 
 ## Plan
 
-- ~~Install harness, gates, README, ADRs, register parent~~ — done (earlier session).
-- ~~Spec mode for the parent; approve slice map at the Spec Gate~~ — done.
-- ~~Implement S1/S2/S3 (T1–T3) with per-batch gates~~ — done.
-- ~~S4 spec trio + parent amendments; human Spec Gate~~ — approved (2026-11-16, "endavant").
-- ~~S4 batch 1: T1–T6 (port, adapter, signature, tool, fixtures + tests)~~ — done,
-  gate green in `harness/logs/debrief_eval_query/batch-1.log` (196 passed).
-- ~~S4 batch 2 (T7–T9): docs, traceability, demo, full battery~~ — done; gauntlet
-  G1 PASS, traceability 5/5, transcript in `batch-2.log`.
-- **Now: Completion Gate** — request the human's approval to flip the feature to
-  `done` (commit batch 2 first).
-- **Next after the gate:** session close (history entry + human reviewer walks
-  C1–C8 in `harness/CHECKPOINTS.md`).
+- (empty — the next session picks up from `harness/feature_list.json`, everything `done`)
 
 ## Log
 
-- S4 `debrief_eval_query` spec written (spec mode): requirements R1, R2, R12–R14;
-  design with the fleet-eval contract (`answers/<model>/grade*.json` as the source of
-  truth, `results.json` deliberately not read), outcome policy per task, delivery-failure
-  rule, and a signature made of battery digest + engine family (the model is the variable
-  under test, so engine flags stay out of it). Parent amended: R9 now points at S4,
-  R12–R14 added, slice map gains S4, feature 5 registered as `pending`.
-- Decision recorded: no export shim. Mapping fleet-eval into the ggufbench schema would
-  fabricate a signature and mix two schemas under one root, which turns every combined
-  `bench.query` into `incomparable_rows`.
-
-- T4 closure batch for `debrief`: full gate battery green and captured; gauntlet G2/G3
-  round 1 REJECTED it with 4 hostile-input findings.
-- T4 fix round 1 for `debrief`: all four findings fixed (NUL paths -> `path_outside_root`;
-  artifact enumeration OSError -> `source_unparseable` incl. surfacing unreadable run
-  dirs; outcome enum validated at both adapter boundaries so a failed run can never
-  answer "every logged step passed"; nesting-bomb JSON / undecodable bytes ->
-  `source_unparseable`), each with parametrized regression tests (suite 32 -> 54).
-  Battery re-run green (`harness/logs/debrief/batch-5.log`, six gates exit=0);
-  install smoke and demos re-recorded (`install-smoke.log`, `demo.log` incl. hostile
-  probes); gauntlet re-ran from G1 -> round 2 REJECTED with 2 sibling findings at the
-  ggufbench score boundary (non-finite scores fabricating a proposal winner; huge-int
-  score crashing past the R1 contract).
-- T4 fix round 2 for `debrief`: both score-boundary findings fixed at the one spot the
-  findings named (`ggufbench_store.py::_map_row`: `math.isfinite` gate + `OverflowError`
-  -> `source_unparseable`), 8 regression rows (suite 54 -> 62); battery re-run green
-  (`harness/logs/debrief/batch-6.log`, six gates exit=0); install smoke and demos
-  re-recorded incl. the score-boundary probes (`install-smoke.log`, `demo.log`);
-  gauntlet re-ran from G1 -> **round 3 PASS** (final verdict, four PASS lines in
-  `harness/progress/gauntlet_debrief.md`; per-pass evidence
-  `harness/logs/debrief/gauntlet-g23.log`, round-2 + round-3 sections). Parent
-  `debrief` `done`.
-- Review fix round (round-1 CHANGES_REQUESTED): the three slice entries
-  (`debrief_bench_query`, `debrief_run_inspect`, `debrief_role_propose`, each
-  `part_of: "debrief"`, `status: "pending"`) were restored to
-  `harness/feature_list.json` per design.md's slice map and tasks.md T1's deliverable —
-  they had been dropped from the file even though T1/T4 records describe them as
-  present. Validator re-run: valid (4 features); init.sh re-run: `[OK]` (62 passed);
-  full battery re-run green; install smoke re-run (uv tool install into a temp tool
-  dir, JSON-RPC over the installed binary: initialize / tools/list / tools/call
-  bench.query -> 4 findings, error null); gauntlet G1 re-run PASS; check-traceability
-  re-run 11/11 PASS. The stale round-2-only `gauntlet-g23.log` was annotated with the
-  round-3 fresh-eyes pass (incl. a fresh `1e999` sibling probe) so the on-disk
-  per-pass evidence matches the round-3 verdict.
-- Gauntlet round 3 REJECTED the feature with 3 findings: [G2-1 MUST-FIX] nested
-  symlink indirection — `GgufbenchStore._results_files()` followed symlinks *below*
-  the agent-validated path (`<root>/r1/results.json` -> outside leaked external rows
-  into findings); [G2-2 SHOULD-FIX] role tokens already carrying the canonical prefix
-  (`role=BW_ROLE_WORKER`) rendered a non-pasteable `BW_ROLE_BW_ROLE_*` diff;
-  [G2-3 DEFENDED] residual probes (underflow, duplicate headers, corrupt-dir refusal,
-  vacuous signature keys, traversal-shaped role tokens).
-- T4 fix round 4 for `debrief`: both actionable findings fixed at the one spot each
-  finding named — `ggufbench_store.py::_results_files` now resolves the store root
-  once and funnels every candidate (`root / RESULTS_FILE` and each `iterdir` entry)
-  through `_contained_results()` (resolve + `is_relative_to(root)` before any read;
-  an escaping candidate refuses the whole scan as `source_unparseable`), and
-  `use_cases.py::_canonical_role()` uppercases and strips a leading `BW_ROLE_` before
-  dedup/rendering. 10 regression rows (suite 62 -> 72) incl. the contained-symlink
-  positive control. Battery re-run green (`harness/logs/debrief/batch-7.log`, six
-  gates exit=0); install smoke re-run (`install-smoke.log`); demo transcript
-  re-recorded with the round-3 probes (`demo.log`: symlink escape -> structured
-  error, no `LEAKED-model` anywhere; prefixed role -> normalized `+ BW_ROLE_WORKER=…`,
-  no `BW_ROLE_BW_ROLE_`); check-traceability re-run 11/11 PASS; gauntlet re-ran from
-  G1 -> **round 4 PASS** (final verdict, four PASS lines in
-  `harness/progress/gauntlet_debrief.md`; fresh-eyes G2+G3 evidence
-  `harness/logs/debrief/gauntlet-g23.log`, incl. 5 new residual probes — symlink
-  loop, escaping run-dir symlink, dir-targeted link, contained two-hop chain,
-  degenerate role token — and 3 defended findings with named trade-offs). Parent
-  `debrief` `done`.
-- Evidence-state repair: the checkout this attempt started from had lost the
-  reviewer-accepted `harness/feature_list.json` (one feature, parent `blocked` — the
-  status flip-watcher commits `chore(debrief): status blocked` and the previous
-  session's uncommitted restore was not present). Restored the accepted state:
-  parent `debrief` = `done` (APPROVAL on disk, validator's done rule satisfied) plus
-  slice ids 2–4 `debrief_bench_query` / `debrief_run_inspect` / `debrief_role_propose`,
-  each `part_of: "debrief"`, `status: "pending"` — titles from design.md's slice map,
-  acceptance rows from requirements.md's slice ownership, exactly the state the
-  round-1 review fix recorded and the reviewer APPROVED. Validator: valid (4
-  features); traceability and gauntlet G1 re-run green on the restored file; the
-  six-gate battery re-captured on this final state (`harness/logs/debrief/batch-7.log`:
-  all exit=0, 72 passed, "valid (4 features)") — closing the reviewer's
-  non-blocking observation about a battery log predating the restore.
-- Gauntlet round 5 REJECTED with 2 findings (artifact string-field diff-line forgery
-  in ggufbench_store; run.inspect answering run_source_missing for an existing log
-  behind an unreadable parent). T4 fix round 5 fixed both exactly as ordered
-  (identifier-like artifact fields = single-line whitespace-free tokens, free-text
-  fields = single-line control-char-free, refusing source_unparseable; buildwright
-  probe mirrored onto stat() with EACCES -> source_unparseable), plus one fresh-eyes
-  residual found and fixed in the same batch: Unicode line separators
-  (U+0085/U+2028/U+2029) pass any `ord < 0x20` check but still split under
-  `str.splitlines()`, so `_required_line` now requires `value.splitlines() == [value]`
-  and `_required_token` refuses control characters. Suite 72 -> 91; battery
-  re-captured (`harness/logs/debrief/batch-8.log`, six gates exit=0); install smoke
-  and demo transcript re-recorded with the round-5 probes (`install-smoke.log`,
-  `demo.log` "demo assertions PASS"); check-traceability 11/11 PASS; gauntlet re-ran
-  from G1 -> **round 6 PASS** (four PASS lines in `gauntlet_debrief.md`, round-5
-  record kept below the separator; round-6 fresh-eyes evidence in
-  `gauntlet-g23.log`). Parent `debrief` remains `done`.
-
-- Gauntlet round 7 (fresh G2+G3 pass independent of the prior six rounds)
-  REJECTED with one MUST-FIX: a step-stripped buildwright run log (valid `task:`
-  header, zero `step:` lines) answered `[]` as a structured success from
-  run.inspect and "no proposal: every logged step passed" from routing.propose
-  while the log's own `result: fail failed_steps=01` header declared a failure;
-  the `result:`/`failed_steps` header was parsed nowhere.
-- T4 fix round 6 for `debrief` (human fix order): `_map_log` in
-  `src/debrief/adapters/buildwright_log.py` refuses a log with a `task:` header
-  but no `step:` lines (`source_unparseable`), and the optional family fix is
-  implemented — `_check_result_header` cross-checks the `result:` header against
-  the logged step outcomes (pass-over-logged-failure refuses; `failed_steps`
-  compared padding-insensitively against the logged failing steps; failure with
-  no logged failing step / no list / empty list / malformed header / enum token
-  refuses). 13 regression rows (suite 91 -> 104); 19 residual probes PASS; demo
-  transcript re-recorded (33 assertions PASS incl. the round-7 section); install
-  smoke re-run over the installed binary incl. a headers-only-log probe (the
-  smoke's JSON-RPC loop also fixed: it deadlocked on the silent
-  `notifications/initialized` notification); traceability re-run 11/11 PASS;
-  gauntlet re-run from G1 -> **round 8 PASS** (four PASS lines in
-  `gauntlet_debrief.md`; round-8 section in `gauntlet-g23.log`; round-7 record
-  kept below the separator); battery re-captured on the final closure state
-  (`harness/logs/debrief/batch-9.log`, six gates exit=0, 104 passed,
-  feature_list valid — 4 features). `harness/feature_list.json` restored to the
-  reviewer-accepted shape (parent `done` + the three `part_of: "debrief"` slice
-  entries, `status: "pending"`) after the status-flip watcher dropped them again;
-  validator -> valid (4 features). APPROVAL refreshed with the round-7/8
-  evidence. Parent `debrief` remains `done`.
-
-- S1 `debrief_bench_query` resumption (T4 fix round — gauntlet round-1 G2): the
-  branch tip carried a merge-ordering race on `harness/feature_list.json`
-  (debrief_bench_query "blocked" vs main@7daeea6's flip-watcher "in_progress",
-  undocumented per docs/specs.md). Fixed: tracker restored byte-identical to
-  main (`git diff main -- harness/feature_list.json` empty), validator valid,
-  invariant I1 exactly one in_progress. Gauntlet re-ran from G1 -> PASS
-  (four PASS lines regenerated in `harness/progress/gauntlet_debrief_bench_query.md`;
-  per-pass evidence `harness/logs/debrief_bench_query/{gauntlet-g1.log,
-  gauntlet-g23.log, batch-6.log}`); T4 deliverables re-proven green
-  (150 passed, ruff/format/mypy strict, init.sh `[OK]`, traceability 3/3 PASS
-  saved in the feature directory). Landing constraint recorded in
-  `harness/progress/impl_debrief_bench_query.md` (Dispatch 6): the implementer
-  session allowlist has no `git add`/`git commit`, so the leader lands the
-  tracker sync as `chore(debrief_bench_query): status in_progress`.
-
-- 2026-11-16 — S4 batch 1 (T1–T6) done. `EvalStore` port + `EVAL_SOURCE_MISSING`;
-  `adapters/fleet_eval_store.py` (per-model parse, battery digest over
-  `prompts/` + `grade.py`/`grade_E.py`/`check_E.py` + `task_[a-d]/`, engine family
-  from `logs/*.cmd` / `*.strata.out`, outcome policy per design.md, delivery
-  failure as first-class fail); shared boundary guards extracted to
-  `adapters/_guards.py` and `ggufbench_store.py` refactored onto them (behaviour
-  unchanged, all prior tests green); `QueryEval` + `eval.query` +
-  `DEBRIEF_EVAL_ROOT` in `mcp_server.py`. Fixtures `tests/fixtures/fleet_eval{,_strata,_broken}`
-  (three models: a passing one, a failing one, and one with a B delivery failure
-  and no task-E grade, mirroring the real qwen38 / qwen38-think variants);
-  `tests/test_eval.py` 41 tests: outcome policy, delivery failure (A/B/E),
-  missing-E model keeps the cohort signature, strata family, two cohorts and a
-  truncated battery both refuse as `incomparable_rows`, battery-count mismatch,
-  symlink escape / contained symlink, non-finite measures, hostile bytes,
-  byte-identical tree after a query. Suite 155 → 196; battery green, full output
-  in `harness/logs/debrief_eval_query/batch-1.log`. Adapter also smoke-tested
-  against the real checkout: 48 findings, one delivery failure (`qwen38`/B),
-  signature `A:10,B:10,C:7,D:7,E:5@…@llama.cpp+strata`.
-  Batching note: T1–T5 have no observable behaviour until fixtures exist, so the
-  first executable gate ran after T6; tasks.md records T1–T6 as one batch citing
-  that single log.
-
-- 2026-11-16 — S4 batch 2 (T7–T9) done. Docs went with the spec commit (`a130043`);
-  traceability table filled in `requirements.md` + tool-readable table in
-  `harness/progress/impl_debrief_eval_query.md` (`feature:` attributed);
-  `check-traceability --feature debrief_eval_query` → 5/5 PASS, verdict saved to
-  `harness/specs/debrief_eval_query/review.md`. Demo against the real checkout
-  recorded (`demo.log`: 48 findings, shared signature
-  `A:10,B:10,C:7,D:7,E:5@8629fb951172@llama.cpp+strata`, qwen38/B delivery failure,
-  traversal → `path_outside_root`, battery-less subpath → `eval_source_missing`).
-  Gate notes: the fixture `.py` battery files made `ruff format --check` and
-  `mypy --strict` fail, so `pyproject.toml` now excludes `tests/fixtures` from both
-  (fixture files are data the adapter reads, not source the linters judge);
-  `tasks.md` task lines moved to the gauntlet's canonical `- [x] T<n>:` shape (the
-  bold `**T1**` form parsed as "no tasks"). Full battery green — 196 passed, ruff,
-  ruff format, mypy --strict (18 files), audit-security no HIGH, init.sh OK,
-  gauntlet G1 PASS (`gauntlet-g1.log`), traceability 5/5 — transcript in
-  `harness/logs/debrief_eval_query/batch-2.log`.
+- (empty)
 
 ## Next step
 
-Completion Gate: request the human's approval to flip `debrief_eval_query` to
-`done`. Session close afterwards (history entry + C1–C8).
+Nothing pending. Candidate follow-ups if the human wants them:
+
+- Wire `DEBRIEF_EVAL_ROOT=/Users/jmarsalp-local/works/fleet-eval` into the local
+  opencode MCP config (`~/.config/opencode/opencode.json`), which today only sets
+  `DEBRIEF_BENCH_ROOT` and `DEBRIEF_RUN_ROOT`.
+- README/docs: mention the fourth tool (`eval.query`) and the new port.
+- Publish a release tag (PyPI trusted publishing fires on `v*`).
