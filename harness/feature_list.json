@@ -80,7 +80,7 @@
         "The tool writes nothing; responses are findings or a structured error (R1, R2)."
       ],
       "part_of": "debrief",
-      "status": "in_progress"
+      "status": "done"
     }
   ]
 }

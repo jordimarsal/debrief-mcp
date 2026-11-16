@@ -1,0 +1,11 @@
+# APPROVAL — debrief_eval_query
+
+- human: jordi
+- date: 2026-11-16
+- gate: completion gate (in-session, human approval via the agent harness)
+- comments: -
+- evidence: battery `harness/logs/debrief_eval_query/batch-2.log` (196 passed,
+  ruff, ruff format, mypy --strict, audit-security no HIGH, init.sh OK, gauntlet
+  G1 PASS in `gauntlet-g1.log`, traceability 5/5 in `../review.md`), demo against
+  the real checkout in `demo.log`; commits a130043 (spec), b65762f (T1–T6),
+  eb2f0a2 (T7–T9).
