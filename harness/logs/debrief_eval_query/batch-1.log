@@ -1,0 +1,39 @@
+── 1. Checking harness files ──────────────────────────
+[0;32m[OK][0m    Exists AGENTS.md
+[0;32m[OK][0m    Exists .claude/ or .opencode/
+[0;32m[OK][0m    Exists harness/CHECKPOINTS.md
+[0;32m[OK][0m    Exists harness/feature_list.json
+[0;32m[OK][0m    Exists harness/progress/current.md
+[0;32m[OK][0m    Exists docs/architecture.md
+[0;32m[OK][0m    Exists docs/conventions.md
+[0;32m[OK][0m    Exists docs/verification.md
+[0;32m[OK][0m    Exists docs/specs.md
+[0;32m[OK][0m    Exists harness/specs/
+
+── 2. Validating harness/feature_list.json ────────────
+[OK]    harness/feature_list.json valid (5 features)
+
+── 3. Running tests ──────────────────────────────────
+Running: uv run pytest tests 2>&1
+============================= test session starts ==============================
+platform darwin -- Python 3.14.10, pytest-9.2.0, pluggy-1.7.0
+rootdir: /Users/jmarsalp-local/works/debrief-mcp
+configfile: pyproject.toml
+plugins: anyio-4.16.0
+collected 196 items
+
+tests/test_bench.py .................................................... [ 26%]
+.                                                                        [ 27%]
+tests/test_cli_help.py .....                                             [ 29%]
+tests/test_eval.py .........................................             [ 50%]
+tests/test_package.py .                                                  [ 51%]
+tests/test_propose.py .................................................. [ 76%]
+...............                                                          [ 84%]
+tests/test_quality_gates.py .                                            [ 84%]
+tests/test_run.py ..............................                         [100%]
+
+============================= 196 passed in 1.57s ==============================
+[0;32m[OK][0m    All tests pass
+
+── 4. Summary ────────────────────────────────────────
+[0;32m[OK][0m    Environment ready. You can start working.

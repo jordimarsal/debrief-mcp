@@ -1,4 +1,4 @@
-"""Driving use cases: one per agent question (QueryBench S1, InspectRun S2, ProposeRole S3)."""
+"""Driving use cases: one per agent question (S1 bench, S2 run, S3 propose, S4 eval)."""
 
 from __future__ import annotations
 
@@ -6,7 +6,7 @@ import logging
 
 from debrief.domain import FAIL, PASS, Finding, shared_signature
 from debrief.errors import DebriefError
-from debrief.ports import BenchStore, RunLog
+from debrief.ports import BenchStore, EvalStore, RunLog
 
 log = logging.getLogger(__name__)
 
@@ -38,6 +38,21 @@ class InspectRun:
             log.warning("run inspection refused: %s", answer.code)
             return answer
         log.info("run inspection answered from receipts: %d findings", len(answer))
+        return answer
+
+
+class QueryEval:
+    """ "What did fleet-eval measure?" — answered only from an EvalStore (R12)."""
+
+    def __init__(self, store: EvalStore) -> None:
+        self._store = store
+
+    def run(self) -> list[Finding] | DebriefError:
+        answer = self._store.findings()
+        if isinstance(answer, DebriefError):
+            log.warning("eval query refused: %s", answer.code)
+            return answer
+        log.info("eval query answered from receipts: %d findings", len(answer))
         return answer
 
 

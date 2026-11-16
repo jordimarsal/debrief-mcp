@@ -1,6 +1,6 @@
-"""MCP stdio adapter: three tools that answer from receipts and never write (R1, R2).
+"""MCP stdio adapter: four tools that answer from receipts and never write (R1, R2).
 
-Tool names carry the port (bench.*, run.*, routing.propose) so an agent cannot
+Tool names carry the port (bench.*, run.*, eval.*, routing.propose) so an agent cannot
 confuse what was measured with what happened in one run (ADR-0002).
 """
 
@@ -18,17 +18,20 @@ from mcp.server.mcpserver import MCPServer
 from mcp.types import ToolAnnotations
 
 from debrief.adapters.buildwright_log import BuildwrightLog
+from debrief.adapters.fleet_eval_store import FleetEvalStore
 from debrief.adapters.ggufbench_store import GgufbenchStore
 from debrief.domain import Finding
 from debrief.errors import PATH_OUTSIDE_ROOT, DebriefError
-from debrief.use_cases import InspectRun, ProposeRole, QueryBench
+from debrief.use_cases import InspectRun, ProposeRole, QueryBench, QueryEval
 
 log = logging.getLogger(__name__)
 
 BENCH_ROOT_ENV = "DEBRIEF_BENCH_ROOT"
 RUN_ROOT_ENV = "DEBRIEF_RUN_ROOT"
+EVAL_ROOT_ENV = "DEBRIEF_EVAL_ROOT"
 DEFAULT_BENCH_ROOT = "artifacts/ggufbench"
 DEFAULT_RUN_ROOT = "artifacts/buildwright"
+DEFAULT_EVAL_ROOT = "artifacts/fleet-eval"
 
 _HELP = f"""\
 debrief-mcp {importlib.metadata.version("debrief-mcp")} — answer agent questions from receipts
@@ -43,6 +46,9 @@ tools (MCP stdio, JSON-RPC over stdin/stdout; logs go to stderr):
                    to the bench root.
   run.inspect      Where did a buildwright run break? Findings from one run log.
                    arg: path — the log file relative to the run root.
+  eval.query       What did fleet-eval measure? Findings from fleet-eval results.
+                   arg: path — the results checkout (or a subdirectory) relative to
+                   the eval root.
   routing.propose  A BW_ROLE_* proposal as text citing both ports' evidence.
                    args: bench_path (ggufbench artifacts dir), run_path (run log).
                    Text only; never applied (ADR-0001), targets roles, never
@@ -55,6 +61,8 @@ environment:
                       (default: {DEFAULT_BENCH_ROOT})
   DEBRIEF_RUN_ROOT    allowed root for buildwright run logs
                       (default: {DEFAULT_RUN_ROOT})
+  DEBRIEF_EVAL_ROOT   allowed root for fleet-eval results
+                      (default: {DEFAULT_EVAL_ROOT})
   DEBRIEF_LOG_LEVEL   stderr logging level (default: INFO)
 
 options:
@@ -73,15 +81,16 @@ server = MCPServer(
     "debrief",
     instructions=(
         "debrief answers agent questions from receipts: bench.query (ggufbench artifacts), "
-        "run.inspect (one buildwright run log), routing.propose (a BW_ROLE_* diff as text). "
-        "It never writes; every answer is findings or a structured error."
+        "run.inspect (one buildwright run log), eval.query (fleet-eval delivery results), "
+        "routing.propose (a BW_ROLE_* diff as text). It never writes; every answer is "
+        "findings or a structured error."
     ),
 )
 
 
 @dataclass(frozen=True)
 class FindingsResponse:
-    """A bench.* / run.* answer: findings, or a structured error and no findings (R1)."""
+    """A bench.* / run.* / eval.* answer: findings, or a structured error and no findings (R1)."""
 
     findings: list[Finding] = field(default_factory=list)
     error: DebriefError | None = None
@@ -131,6 +140,23 @@ def bench_query(path: str) -> FindingsResponse:
     if isinstance(resolved, DebriefError):
         return FindingsResponse(error=resolved)
     return FindingsResponse.of(QueryBench(GgufbenchStore(resolved)).run())
+
+
+@server.tool(
+    name="eval.query",
+    title="What did fleet-eval measure?",
+    description=(
+        "Findings from fleet-eval results: one per model and dispatch-role task, with the "
+        "battery and engine cohort carried as a task signature. `path` is the results "
+        "checkout (or a subdirectory) relative to DEBRIEF_EVAL_ROOT. Read-only."
+    ),
+    annotations=_READ_ONLY,
+)
+def eval_query(path: str = ".") -> FindingsResponse:
+    resolved = _resolve_within(EVAL_ROOT_ENV, DEFAULT_EVAL_ROOT, path)
+    if isinstance(resolved, DebriefError):
+        return FindingsResponse(error=resolved)
+    return FindingsResponse.of(QueryEval(FleetEvalStore(resolved)).run())
 
 
 @server.tool(

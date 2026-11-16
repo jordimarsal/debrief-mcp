@@ -1,0 +1,54 @@
+{
+  "model": "gamma",
+  "A": {
+    "blocks": 1,
+    "chars": 120,
+    "passed": 9,
+    "failed": 1,
+    "syntax_ok": true,
+    "applied": true
+  },
+  "B": {
+    "blocks": 0,
+    "chars": 0,
+    "passed": 10,
+    "failed": 0,
+    "syntax_ok": false,
+    "applied": false
+  },
+  "C": {
+    "found": [
+      "D1_defect",
+      "D2_defect",
+      "D3_defect",
+      "D4_defect",
+      "D5_defect",
+      "D6_defect",
+      "D7_defect"
+    ],
+    "missing": [],
+    "recall": 1.0,
+    "numbered_items": 7,
+    "false_positives_est": 0,
+    "functions_named": [
+      "batch_update"
+    ]
+  },
+  "D": {
+    "root_causes": {
+      "shared_root": true,
+      "resume_finished": true
+    },
+    "root_score": 7,
+    "fixes": {
+      "unique_path": true
+    },
+    "fix_score": 0,
+    "words": 219,
+    "over_300_words": false,
+    "names_exec_id_collision": false,
+    "names_env_pollution": true,
+    "total": 7,
+    "max": 7
+  }
+}

@@ -3,7 +3,7 @@
 > This file is cleared on session close and moved to `history.md`.
 > Keep it updated in real time while you work — not at the end.
 
-- **Feature in progress:** none — parent `debrief` is `done` (T4 closure batch landed)
+- **Feature in progress:** `debrief_eval_query` (S4) — spec approved; batch 1 (T1–T6) green, batch 2 (T7–T9) next
 - **Started:** 2026-11-02
 - **Agent:** in-session (hybrid)
 
@@ -12,11 +12,27 @@
 - ~~Install harness, gates, README, ADRs, register parent~~ — done (earlier session).
 - ~~Spec mode for the parent; approve slice map at the Spec Gate~~ — done.
 - ~~Implement S1/S2/S3 (T1–T3) with per-batch gates~~ — done.
-- **Next: session close** — append the history entry; a human reviewer walks C1–C8
-  (`harness/CHECKPOINTS.md`) and countersigns the Completion Gate in
-  `harness/specs/debrief/APPROVAL`.
+- ~~S4 spec trio + parent amendments; human Spec Gate~~ — approved (2026-11-16, "endavant").
+- ~~S4 batch 1: T1–T6 (port, adapter, signature, tool, fixtures + tests)~~ — done,
+  gate green in `harness/logs/debrief_eval_query/batch-1.log` (196 passed).
+- **Now: S4 batch 2 (T7–T9)** — traceability table with real test names,
+  `review.md`, demo note, full battery (`init.sh`, pytest, ruff, mypy --strict,
+  audit-security, gauntlet) in `harness/logs/debrief_eval_query/batch-2.log`;
+  then Completion Gate request.
+- **Next after the gate:** session close (history entry + human reviewer walks
+  C1–C8 in `harness/CHECKPOINTS.md`).
 
 ## Log
+
+- S4 `debrief_eval_query` spec written (spec mode): requirements R1, R2, R12–R14;
+  design with the fleet-eval contract (`answers/<model>/grade*.json` as the source of
+  truth, `results.json` deliberately not read), outcome policy per task, delivery-failure
+  rule, and a signature made of battery digest + engine family (the model is the variable
+  under test, so engine flags stay out of it). Parent amended: R9 now points at S4,
+  R12–R14 added, slice map gains S4, feature 5 registered as `pending`.
+- Decision recorded: no export shim. Mapping fleet-eval into the ggufbench schema would
+  fabricate a signature and mix two schemas under one root, which turns every combined
+  `bench.query` into `incomparable_rows`.
 
 - T4 closure batch for `debrief`: full gate battery green and captured; gauntlet G2/G3
   round 1 REJECTED it with 4 hostile-input findings.
@@ -149,6 +165,30 @@
   session allowlist has no `git add`/`git commit`, so the leader lands the
   tracker sync as `chore(debrief_bench_query): status in_progress`.
 
+- 2026-11-16 — S4 batch 1 (T1–T6) done. `EvalStore` port + `EVAL_SOURCE_MISSING`;
+  `adapters/fleet_eval_store.py` (per-model parse, battery digest over
+  `prompts/` + `grade.py`/`grade_E.py`/`check_E.py` + `task_[a-d]/`, engine family
+  from `logs/*.cmd` / `*.strata.out`, outcome policy per design.md, delivery
+  failure as first-class fail); shared boundary guards extracted to
+  `adapters/_guards.py` and `ggufbench_store.py` refactored onto them (behaviour
+  unchanged, all prior tests green); `QueryEval` + `eval.query` +
+  `DEBRIEF_EVAL_ROOT` in `mcp_server.py`. Fixtures `tests/fixtures/fleet_eval{,_strata,_broken}`
+  (three models: a passing one, a failing one, and one with a B delivery failure
+  and no task-E grade, mirroring the real qwen38 / qwen38-think variants);
+  `tests/test_eval.py` 41 tests: outcome policy, delivery failure (A/B/E),
+  missing-E model keeps the cohort signature, strata family, two cohorts and a
+  truncated battery both refuse as `incomparable_rows`, battery-count mismatch,
+  symlink escape / contained symlink, non-finite measures, hostile bytes,
+  byte-identical tree after a query. Suite 155 → 196; battery green, full output
+  in `harness/logs/debrief_eval_query/batch-1.log`. Adapter also smoke-tested
+  against the real checkout: 48 findings, one delivery failure (`qwen38`/B),
+  signature `A:10,B:10,C:7,D:7,E:5@…@llama.cpp+strata`.
+  Batching note: T1–T5 have no observable behaviour until fixtures exist, so the
+  first executable gate ran after T6; tasks.md records T1–T6 as one batch citing
+  that single log.
+
 ## Next step
 
-Session close: append the history entry and run the checkpoint review (C1–C8).
+S4 batch 2 (T7–T9): traceability table + `review.md`, demo note, full battery
+into `harness/logs/debrief_eval_query/batch-2.log`; then request the Completion
+Gate. Session close afterwards (history entry + C1–C8).

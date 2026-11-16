@@ -1,0 +1,14 @@
+{
+  "src_lines": 401,
+  "blocks": 1,
+  "chars": 14335,
+  "syntax_ok": true,
+  "symbols_kept": 4,
+  "symbols_missing": [],
+  "placeholder": false,
+  "lines": 411,
+  "line_ratio": 1.0,
+  "added_symbol": true,
+  "modified_applied": true,
+  "model": "strata-model"
+}

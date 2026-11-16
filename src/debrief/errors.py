@@ -6,6 +6,7 @@ from dataclasses import dataclass
 
 BENCH_SOURCE_MISSING = "bench_source_missing"
 RUN_SOURCE_MISSING = "run_source_missing"
+EVAL_SOURCE_MISSING = "eval_source_missing"
 SOURCE_UNPARSEABLE = "source_unparseable"
 INCOMPARABLE_ROWS = "incomparable_rows"
 PATH_OUTSIDE_ROOT = "path_outside_root"
