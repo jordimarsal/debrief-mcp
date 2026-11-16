@@ -125,8 +125,8 @@ Before finishing:
 - `bench` answers come only from ggufbench artifacts; `run` answers only from a
   buildwright run log; `bench` never reads runs (ADR-0002).
 - Rows never cross a task signature: refuse and explain, never average (ADR-0004).
-- Slice order is fixed: S1 `bench_query` → S2 `run_inspect` → S3 `role_propose`;
-  the slice map lives in `docs/architecture.md` and is approved at the parent's
-  Spec Gate before any slice spec is written.
+- Slice order is fixed: S1 `bench_query` → S2 `run_inspect` → S3 `role_propose` →
+  S4 `eval_query`; the slice map lives in `docs/architecture.md` and is approved at the
+  parent's Spec Gate before any slice spec is written.
 <!-- harness:project:end -->
 
